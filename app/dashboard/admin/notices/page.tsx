@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Timestamp } from "firebase/firestore"
 
 interface Notice {
   id: string
@@ -39,7 +40,7 @@ const noticeFormSchema = z.object({
 
 type NoticeFormValues = z.infer<typeof noticeFormSchema>
 
-export default function AdminNotices() {
+export default function NoticesPage() {
   const { user, userRole } = useAuth()
   const [notices, setNotices] = useState<Notice[]>([])
   const [loading, setLoading] = useState(true)
@@ -140,30 +141,29 @@ export default function AdminNotices() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gas-blue-light/10 to-white dark:from-gas-blue-dark/10 dark:to-gray-900">
+        <Loader2 className="h-8 w-8 animate-spin text-gas-blue" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Manage Notices</h1>
-          <p className="text-muted-foreground">Create and manage notices for all users</p>
-        </div>
+    <div className="container mx-auto py-6 bg-gradient-to-b from-gas-blue-light/5 to-white dark:from-gas-blue-dark/5 dark:to-gray-900 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gas-blue-dark dark:text-gas-blue-light">Notices</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="bg-gas-blue hover:bg-gas-blue-dark text-white">
+              <Plus className="mr-2 h-4 w-4" />
               Add Notice
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white dark:bg-gray-800">
             <DialogHeader>
-              <DialogTitle>Create New Notice</DialogTitle>
-              <DialogDescription>Create a new notice that will be visible to all users</DialogDescription>
+              <DialogTitle className="text-gas-blue-dark dark:text-gas-blue-light">Add New Notice</DialogTitle>
+              <DialogDescription className="text-gas-gray">
+                Create a new notice to be displayed to all users.
+              </DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -172,9 +172,13 @@ export default function AdminNotices() {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Title</FormLabel>
+                      <FormLabel className="text-gas-blue-dark dark:text-gas-blue-light">Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Notice Title" {...field} />
+                        <Input 
+                          placeholder="Enter notice title" 
+                          {...field} 
+                          className="border-gas-blue-light focus:ring-gas-blue"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -185,16 +189,33 @@ export default function AdminNotices() {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Message</FormLabel>
+                      <FormLabel className="text-gas-blue-dark dark:text-gas-blue-light">Message</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Notice message..." className="min-h-[100px]" {...field} />
+                        <Textarea
+                          placeholder="Enter notice message"
+                          className="min-h-[100px] border-gas-blue-light focus:ring-gas-blue"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit">Create Notice</Button>
+                  <Button 
+                    type="submit" 
+                    disabled={form.formState.isSubmitting}
+                    className="bg-gas-blue hover:bg-gas-blue-dark text-white"
+                  >
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Notice"
+                    )}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -202,29 +223,37 @@ export default function AdminNotices() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
-        {notices.length > 0 ? (
-          notices.map((notice) => (
-            <Card key={notice.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle>{notice.title}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteNotice(notice.id)}>
-                    <Trash className="h-4 w-4 text-red-500" />
-                  </Button>
+      <div className="grid gap-6">
+        {notices.map((notice) => (
+          <Card 
+            key={notice.id}
+            className="bg-white dark:bg-gray-800 border-gas-blue-light/20 hover:border-gas-blue-light/40 transition-colors"
+          >
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-gas-blue-dark dark:text-gas-blue-light">{notice.title}</CardTitle>
+                  <CardDescription className="text-gas-gray">
+                    {notice.createdAt instanceof Timestamp 
+                      ? notice.createdAt.toDate().toLocaleDateString()
+                      : "N/A"}
+                  </CardDescription>
                 </div>
-                <CardDescription>{notice.createdAt?.toDate().toLocaleDateString() || "N/A"}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>{notice.message}</p>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No notices found. Create a new notice to get started.</p>
-          </div>
-        )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteNotice(notice.id)}
+                  className="text-gas-orange hover:text-gas-orange-dark hover:bg-gas-orange/10"
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gas-gray-dark dark:text-gas-gray-light">{notice.message}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   )

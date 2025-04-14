@@ -60,7 +60,24 @@ const config: Config = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+  			gas: {
+  				blue: {
+  					DEFAULT: "#1E88E5",
+  					light: "#42A5F5",
+  					dark: "#1565C0",
+  				},
+  				orange: {
+  					DEFAULT: "#FF9800",
+  					light: "#FFB74D",
+  					dark: "#F57C00",
+  				},
+  				gray: {
+  					DEFAULT: "#78909C",
+  					light: "#90A4AE",
+  					dark: "#546E7A",
+  				},
+  			},
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
