@@ -68,7 +68,7 @@ export function Sidebar() {
               <path d="M8 19.5v-4" />
               <path d="M16 19.5v-4" />
             </svg>
-            Gas Agency
+            BookMyGas
           </Link>
         </div>
         <div className="flex-1 overflow-auto py-2">
